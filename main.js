@@ -12,8 +12,8 @@ const db = mysql.createConnection({
 db.connect(function (e){
   if(e) throw e
   
-  con.query('
-    CREATE TABLE IF NOT EXISTS `user` (
+  db.query('
+    CREATE TABLE IF NOT EXISTS `users` (
     `id` int(6) unsigned NOT NULL AUTO_INCREMENT,
     `login` varchar(30) NOT NULL,
     `password` varchar(50) NOT NULL,
@@ -23,16 +23,47 @@ db.connect(function (e){
     PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
    ', (e, _) => if (e) throw e)
-  
-  con.query(`INSERT INTO customers (name, address) VALUES (${}, ${})`, (e, _) => if (e) throw e)
 })
+
+/*
+
+con.query(`INSERT INTO customers (name, address) VALUES (${}, ${})`, (e, _) => if (e) throw e)
+
+*/
 
 
 
 const app = express()
+app.use(express.bodyParser())
 
-app.get('/', (req, res) => {
-  res.send("Hello World")
+app.get('/users/:id', (req, res) => {
+  const id = req.params.id
+  
+  if(!id){
+    db.query(`SELECT * FROM users`, (e, r,_) => {
+      res.send(r)
+    })
+  }else{
+    db.query(`SELECT * FROM users WHERE id=${id}`, (e, r,_) => {
+      res.send(r)
+    })
+  }
+})
+
+app.post('/users', (req, res) => {
+  const {name, login, password, birthday, info, phone} = req.body
+  db.query(`INSERT INTO users (name, login, password, birthday, info, phone) VALUES (${name}, ${login}, ${password}, ${birthday}, ${info}, ${phone})`, (e, _) => if (e) throw e) 
+})
+
+app.put('/users/:id', (req, res) => {
+  const id = req.params.id
+  const {name, login, password, birthday, info, phone} = req.body
+  db.query(`INSERT INTO users (name, login, password, birthday, info, phone) VALUES (${name}, ${login}, ${password}, ${birthday}, ${info}, ${phone}) WHERE id=${id}`, (e, _) => if (e) throw e)
+ })
+
+app.delete('/users/:id', (req, res) => {
+  const id = req.params.id
+  db.query(`DELETE FROM users WHERE id=${id}`, (e, _) => if (e) throw e)
 })
 
 app.listen(8000)
